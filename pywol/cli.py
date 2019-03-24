@@ -25,23 +25,14 @@ from .wol import wake
 )
 @click.option("--port", default=9, show_default=True, help="Target port.")
 def cli(mac_address, ip, port):
-    """CLI for pywol.wol.wake interface.
+    """CLI for the pywol package.
 
     Prefer specifying the broadcast IPv4 address of the target host
     subnet over the default '255.255.255.255'.
 
-    Parameters
-    ----------
-    mac_address : str
-        Target MAC address.
-    ip_address : str, optional
-        Target IP address. (default is '255.255.255.255').
-    port : int, optional
-        Target port. (default is 9).
-
     """
 
-    click.echo(f"Waking '{mac_address}' at {ip}:{port} ...")
+    click.echo(f"Waking '{mac_address}' at {ip}:{port}...")
     wake(mac_address, ip_address=ip, port=port)
 
 
