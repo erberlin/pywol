@@ -10,7 +10,12 @@ import socket
 
 import pytest
 
-from pywol.wol import _generate_magic_packet, _clean_mac_address, _send_upd_broadcast
+from pywol.wol import (
+    _clean_mac_address,
+    _generate_magic_packet,
+    _send_upd_broadcast,
+    wake,
+)
 
 
 @pytest.fixture()
@@ -76,21 +81,10 @@ def test__clean_mac_address_invalid(invalid_input):
         _clean_mac_address(invalid_input)
 
 
-def test__send_upd_broadcast_defaults(sample_data):
-    """Test with defaults."""
-
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        sock.settimeout(1)
-        sock.bind(("0.0.0.0", 9))
-        _send_upd_broadcast(sample_data["payload"])
-        data_received, _ = sock.recvfrom(128)
-        assert data_received == sample_data["payload"]
-
-
 @pytest.mark.parametrize(
     "target_ip, target_port", [("127.0.0.1", 7), ("255.255.255.255", 9)]
 )
-def test__send_upd_broadcast_target(sample_data, target_ip, target_port):
+def test__send_upd_broadcast(sample_data, target_ip, target_port):
     """Test with specified IP address and port."""
 
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
@@ -99,5 +93,27 @@ def test__send_upd_broadcast_target(sample_data, target_ip, target_port):
         _send_upd_broadcast(
             sample_data["payload"], ip_address=target_ip, port=target_port
         )
+        data_received, _ = sock.recvfrom(128)
+        assert data_received == sample_data["payload"]
+
+
+def test_wake_defaults(sample_data):
+    """Test with defaults."""
+
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        sock.settimeout(1)
+        sock.bind(("0.0.0.0", 9))
+        wake(sample_data["mac"])
+        data_received, _ = sock.recvfrom(128)
+        assert data_received == sample_data["payload"]
+
+
+def test_wake_target_ip_port(sample_data):
+    """Test with specified target ip address & port."""
+
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        sock.settimeout(1)
+        sock.bind(("0.0.0.0", 7))
+        wake(sample_data["mac"], ip_address="127.0.0.1", port=7)
         data_received, _ = sock.recvfrom(128)
         assert data_received == sample_data["payload"]

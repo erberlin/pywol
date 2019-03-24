@@ -45,7 +45,7 @@ def _clean_mac_address(mac_address_supplied):
         return mac_address_cleaned
     else:
         raise ValueError(
-            f"Invalid MAC address supplied: {mac_address_supplied}."
+            f"Invalid MAC address supplied: '{mac_address_supplied}'.\n"
             "A MAC address should contain 12 hexadecimal digits."
         )
 
@@ -71,21 +71,49 @@ def _generate_magic_packet(mac_address):
     return bytes.fromhex("FF" * 6 + mac_address * 16)
 
 
-def _send_upd_broadcast(payload, *, ip_address="<broadcast>", port=9):
+def _send_upd_broadcast(payload, ip_address, port):
     """Send data as UDP broadcast message.
 
     Parameters
     ----------
     payload : bytes
         Should be 102-byte magic packet payload.
-    ip_address : str, optional
+    ip_address : str
         Target IP address.
-        (default is '<broadcast>', i.e. '255.255.255.255').
-    port : int, optional
-        Target port. (default is 9).
+    port : int
+        Target port.
 
     """
 
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.sendto(payload, (ip_address, port))
+
+
+def wake(mac_address, *, ip_address="255.255.255.255", port=9):
+    """Generate and send WoL magic packet.
+
+    Prefer specifying the broadcast IPv4 address of the target host
+    subnet over the default universal '255.255.255.255'.
+
+    Parameters
+    ----------
+    mac_address : str
+        Supplied MAC address.
+    ip_address : str, optional
+        Target IP address. (default is '255.255.255.255').
+    port : int, optional
+        Target port. (default is 9).
+
+    """
+
+    try:
+        mac_cleaned = _clean_mac_address(mac_address)
+    except ValueError as e:
+        print(e)
+    else:
+        payload = _generate_magic_packet(mac_cleaned)
+        try:
+            _send_upd_broadcast(payload, ip_address, port)
+        except Exception as e:
+            print(e)
