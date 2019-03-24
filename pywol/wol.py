@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-    pywol.wol
-    ---------
-    This module implements functionality to generate and send Wake-on-LAN magic packets.
+pywol.wol
+---------
+This module implements functionality to generate and send Wake-on-LAN magic packets.
 
-    copyright: © 2019 by Erik R Berlin.
-    license: MIT, see LICENSE for more details.
+copyright: © 2019 by Erik R Berlin.
+license: MIT, see LICENSE for more details.
 
 """
 
 import re
+import socket
 
 NON_HEX_CHARS = re.compile(r"[^a-f0-9]", re.IGNORECASE)
 MAC_PATTERN = re.compile(r"^[a-f0-9]{12}$", re.IGNORECASE)
@@ -68,3 +69,23 @@ def _generate_magic_packet(mac_address):
     """
 
     return bytes.fromhex("FF" * 6 + mac_address * 16)
+
+
+def _send_upd_broadcast(payload, *, ip_address="<broadcast>", port=9):
+    """Send data as UDP broadcast message.
+
+    Parameters
+    ----------
+    payload : bytes
+        Should be 102-byte magic packet payload.
+    ip_address : str, optional
+        Target IP address.
+        (default is '<broadcast>', i.e. '255.255.255.255').
+    port : int, optional
+        Target port. (default is 9).
+
+    """
+
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.sendto(payload, (ip_address, port))

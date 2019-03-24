@@ -1,6 +1,16 @@
+# -*- coding: utf-8 -*-
+"""Tests for the pywol.wol module.
+
+copyright: © 2019 by Erik R Berlin.
+license: MIT, see LICENSE for more details.
+
+"""
+
+import socket
+
 import pytest
 
-from pywol.wol import _generate_magic_packet, _clean_mac_address
+from pywol.wol import _generate_magic_packet, _clean_mac_address, _send_upd_broadcast
 
 
 @pytest.fixture()
@@ -9,7 +19,7 @@ def sample_data():
 
     sample_data = {
         "mac": "1A2B3C4D5E6F",
-        "expected_payload": bytes(
+        "payload": bytes(
             b"\xff\xff\xff\xff\xff\xff"
             b"\x1a+<M^o\x1a+<M^o\x1a+<M^o\x1a+<M^o"
             b"\x1a+<M^o\x1a+<M^o\x1a+<M^o\x1a+<M^o"
@@ -38,7 +48,7 @@ def test__generate_magic_packet_contents(sample_data):
     """Returned payload is equal to expected payload."""
 
     payload = _generate_magic_packet(sample_data["mac"])
-    assert payload == sample_data["expected_payload"]
+    assert payload == sample_data["payload"]
 
 
 @pytest.mark.parametrize(
@@ -64,3 +74,30 @@ def test__clean_mac_address_invalid(invalid_input):
 
     with pytest.raises(ValueError):
         _clean_mac_address(invalid_input)
+
+
+def test__send_upd_broadcast_defaults(sample_data):
+    """Test with defaults."""
+
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        sock.settimeout(1)
+        sock.bind(("0.0.0.0", 9))
+        _send_upd_broadcast(sample_data["payload"])
+        data_received, _ = sock.recvfrom(128)
+        assert data_received == sample_data["payload"]
+
+
+@pytest.mark.parametrize(
+    "target_ip, target_port", [("127.0.0.1", 7), ("255.255.255.255", 9)]
+)
+def test__send_upd_broadcast_target(sample_data, target_ip, target_port):
+    """Test with specified IP address and port."""
+
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        sock.settimeout(1)
+        sock.bind(("0.0.0.0", target_port))
+        _send_upd_broadcast(
+            sample_data["payload"], ip_address=target_ip, port=target_port
+        )
+        data_received, _ = sock.recvfrom(128)
+        assert data_received == sample_data["payload"]
