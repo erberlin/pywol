@@ -1,6 +1,6 @@
 import pytest
 
-from pywol.wol import _generate_magic_packet
+from pywol.wol import _generate_magic_packet, _clean_mac_address
 
 
 @pytest.fixture()
@@ -39,3 +39,28 @@ def test__generate_magic_packet_contents(sample_data):
 
     payload = _generate_magic_packet(sample_data["mac"])
     assert payload == sample_data["expected_payload"]
+
+
+@pytest.mark.parametrize(
+    "valid_input, expected_output",
+    [
+        ("AA:BB:CC:DD:EE:FF", "aabbccddeeff"),
+        ("A1-B2;C3.D4 E5/F6", "a1b2c3d4e5f6"),
+        ("123456abcdef", "123456abcdef"),
+    ],
+)
+def test__clean_mac_address_valid(valid_input, expected_output):
+    """Valid inputs should be returned without non-hex characters."""
+
+    mac_cleaned = _clean_mac_address(valid_input)
+    assert mac_cleaned == expected_output
+
+
+@pytest.mark.parametrize(
+    "invalid_input", ["AA:BB:CC:DD:EE:FFF", "AA:BB:CC:DD:EE:F", "23456abcdef"]
+)
+def test__clean_mac_address_invalid(invalid_input):
+    """Invalid inputs should raise ValueError."""
+
+    with pytest.raises(ValueError):
+        _clean_mac_address(invalid_input)
