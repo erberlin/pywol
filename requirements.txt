@@ -1,0 +1,9 @@
+black
+flake8
+numpydoc
+pytest
+pytest-cov
+Sphinx
+twine
+wheel
+
