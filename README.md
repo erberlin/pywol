@@ -2,8 +2,11 @@
 >A Wake-on-LAN tool written in Python.
 
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
+![PyPI](https://img.shields.io/pypi/v/pywol.svg)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pywol.svg)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/pywol.svg)
 
-Pywol allows for starting up [WoL](https://en.wikipedia.org/wiki/Wake-on-LAN)-enabled systems over a network<sup>[1](#f1)</sup>, and can either be used as a CLI tool or imported into other Python code.
+Pywol allows for starting up [WoL](https://en.wikipedia.org/wiki/Wake-on-LAN)-enabled systems over a network<sup>[1](#f1)</sup>, and can either be used as a CLI tool or imported for use in other Python code.
 
 ## Installation
 
@@ -14,7 +17,7 @@ Pywol allows for starting up [WoL](https://en.wikipedia.org/wiki/Wake-on-LAN)-en
 ## Usage examples
 As a CLI tool:
 ```sh
-    $ pywol 1A:2B:3C:4D:5E:6F --ip 192.168.1.255
+    $ pywol 1A:2B:3C:4D:5E:6F --ip 192.168.1.255 --v
     Waking '1A:2B:3C:4D:5E:6F' at 192.168.1.255:9...
     $
     $ pywol --help
@@ -26,9 +29,10 @@ As a CLI tool:
     over the default '255.255.255.255'.
 
     Options:
-    --ip, --ip_address TEXT  IPv4 broadcast address of target subnet.  [default:
+    --ip_address, --ip TEXT  IPv4 broadcast address of target subnet.  [default:
                             255.255.255.255]
-    --port INTEGER           Target port.  [default: 9]
+    --port, --p INTEGER      Target port.  [default: 9]
+    --verbose, --v
     --help                   Show this message and exit.
 ```
 Imported for use in other code:
@@ -40,10 +44,9 @@ Imported for use in other code:
 I needed one and this was an opportunity to learn some stuff.
 
 ## TODO
-* Logging
-* Support for multiple target hosts
-* Support for loading input from files
 * Documentation
+* Support for multiple target hosts
+* Support for loading input from file
 
 ## Meta
 
