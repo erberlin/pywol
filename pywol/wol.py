@@ -44,10 +44,7 @@ def _clean_mac_address(mac_address_supplied):
     if MAC_PATTERN.fullmatch(mac_address_cleaned):
         return mac_address_cleaned
     else:
-        raise ValueError(
-            f"Invalid MAC address supplied: '{mac_address_supplied}'.\n"
-            "A MAC address should contain 12 hexadecimal digits."
-        )
+        raise ValueError(f"[Error] Invalid MAC address: {mac_address_supplied}")
 
 
 def _generate_magic_packet(mac_address):
@@ -115,5 +112,7 @@ def wake(mac_address, *, ip_address="255.255.255.255", port=9):
         payload = _generate_magic_packet(mac_cleaned)
         try:
             _send_upd_broadcast(payload, ip_address, port)
-        except Exception as e:
-            print(e)
+        except OSError:
+            print(f"[Error] Invalid IP address: {ip_address}")
+        except OverflowError:
+            print(f"[Error] Invalid port: {port}")
