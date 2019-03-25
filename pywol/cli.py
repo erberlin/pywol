@@ -17,14 +17,15 @@ from .wol import wake
 @click.command()
 @click.argument("mac_address")
 @click.option(
-    "--ip",
     "--ip_address",
+    "--ip",
     default="255.255.255.255",
     show_default=True,
     help="IPv4 broadcast address of target subnet.",
 )
-@click.option("--port", default=9, show_default=True, help="Target port.")
-def cli(mac_address, ip, port):
+@click.option("--port", "--p", default=9, show_default=True, help="Target port.")
+@click.option("--verbose", "--v", is_flag=True)
+def cli(mac_address, ip_address, port, verbose):
     """CLI for the pywol package.
 
     Prefer specifying the broadcast IPv4 address of the target host
@@ -32,8 +33,9 @@ def cli(mac_address, ip, port):
 
     """
 
-    click.echo(f"Waking '{mac_address}' at {ip}:{port}...")
-    wake(mac_address, ip_address=ip, port=port)
+    if verbose:
+        click.echo(f"Waking '{mac_address}' at {ip_address}:{port}...")
+    wake(mac_address, ip_address=ip_address, port=port)
 
 
 if __name__ == "__main__":
