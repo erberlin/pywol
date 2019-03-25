@@ -3,7 +3,7 @@
 
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
 
-Pywol allows for starting up WoL-enabled systems over a network[^1], and can either be used as a CLI tool or imported into other Python code.
+Pywol allows for starting up [WoL](https://en.wikipedia.org/wiki/Wake-on-LAN)-enabled systems over a network<sup>[1](#f1)</sup>, and can either be used as a CLI tool or imported into other Python code.
 
 ## Installation
 
@@ -52,5 +52,6 @@ Erik R Berlin – erberlin.dev@gmail.com
 Distributed under the MIT license. See ``LICENSE`` for more information.
 
 [https://github.com/erberlin/pywol](https://github.com/erberlin/pywol)
----
-[^1]: Provided that any routers between the client and target hosts are configured to forward broadcast packets.
+
+___
+<b id="f1">1</b>. Provided that any routers between the client and target hosts are configured to forward broadcast packets.
