@@ -13,7 +13,7 @@ import pytest
 from pywol.wol import (
     _clean_mac_address,
     _generate_magic_packet,
-    _send_upd_broadcast,
+    _send_udp_broadcast,
     _validate_ip_address,
     wake,
 )
@@ -91,7 +91,7 @@ def test__send_upd_broadcast(sample_data, target_ip, target_port):
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         sock.settimeout(1)
         sock.bind(("0.0.0.0", target_port))
-        _send_upd_broadcast(
+        _send_udp_broadcast(
             sample_data["payload"], ip_address=target_ip, port=target_port
         )
         data_received, _ = sock.recvfrom(128)

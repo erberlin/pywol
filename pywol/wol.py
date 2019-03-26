@@ -72,7 +72,7 @@ def _generate_magic_packet(mac_address):
     return bytes.fromhex("FF" * 6 + mac_address * 16)
 
 
-def _send_upd_broadcast(payload, ip_address, port):
+def _send_udp_broadcast(payload, ip_address, port):
     """Send data as UDP broadcast message.
 
     Parameters
@@ -143,7 +143,7 @@ def wake(mac_address, *, ip_address="255.255.255.255", port=9):
     else:
         payload = _generate_magic_packet(mac_cleaned)
         try:
-            _send_upd_broadcast(payload, valid_ip_address, port)
+            _send_udp_broadcast(payload, valid_ip_address, port)
         except OSError:
             print(f"[Error] Cannot send broadcast to IP address: {valid_ip_address}")
         except OverflowError:
