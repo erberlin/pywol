@@ -39,12 +39,12 @@ def _clean_mac_address(mac_address_supplied):
     Raises
     ------
     ValueError
-        If `mac_address_cleaned` does not contain exactly 12 hexadecimal
+        If `mac_address_supplied` does not contain exactly 12 hexadecimal
         characters.
 
     """
 
-    mac_address_cleaned = NON_HEX_CHARS.sub("", mac_address_supplied).lower()
+    mac_address_cleaned = NON_HEX_CHARS.sub("", mac_address_supplied)
     if MAC_PATTERN.fullmatch(mac_address_cleaned):
         return mac_address_cleaned
     else:

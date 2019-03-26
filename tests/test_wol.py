@@ -60,8 +60,8 @@ def test__generate_magic_packet_contents(sample_data):
 @pytest.mark.parametrize(
     "valid_input, expected_output",
     [
-        ("AA:BB:CC:DD:EE:FF", "aabbccddeeff"),
-        ("A1-B2;C3.D4 E5/F6", "a1b2c3d4e5f6"),
+        ("AA:BB:CC:DD:EE:FF", "AABBCCDDEEFF"),
+        ("A1-B2;C3.D4 E5/F6", "A1B2C3D4E5F6"),
         ("123456abcdef", "123456abcdef"),
     ],
 )
