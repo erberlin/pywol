@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 setup(
     name="pywol",
-    version="0.3.0",
+    version="0.4.0",
     description="A Wake-on-LAN tool written in Python.",
     long_description=README,
     long_description_content_type="text/markdown",
