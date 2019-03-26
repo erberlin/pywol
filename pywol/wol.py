@@ -118,11 +118,41 @@ def _validate_ip_address(ip_address_supplied):
         raise ValueError(f"[Error] Invalid IP address: {ip_address_supplied}")
 
 
+def _validate_port_number(port_number):
+    """Validate port number.
+
+    Parameters
+    ----------
+    port_number : int
+        Supplied port number.
+
+    Returns
+    -------
+    int
+        Valid port number.
+
+    Raises
+    ------
+    TypeError
+        If `port_number` is not of type int.
+    ValueError
+        If `port_number` is not in range 0 - 65535.
+
+    """
+
+    if not isinstance(port_number, int):
+        raise TypeError(f"[Error] Port number must be of type int.")
+    elif 0 <= port_number <= 65535:
+        return port_number
+    else:
+        raise ValueError(f"[Error] Invalid port number: {port_number}")
+
+
 def wake(mac_address, *, ip_address="255.255.255.255", port=9):
     """Generate and send WoL magic packet.
 
     Prefer specifying the broadcast IPv4 address of the target host
-    subnet over the default universal '255.255.255.255'.
+    subnet over the default '255.255.255.255'.
 
     Parameters
     ----------
@@ -138,13 +168,14 @@ def wake(mac_address, *, ip_address="255.255.255.255", port=9):
     try:
         mac_cleaned = _clean_mac_address(mac_address)
         valid_ip_address = _validate_ip_address(ip_address)
+        valid_port = _validate_port_number(port)
     except ValueError as e:
+        print(e)
+    except TypeError as e:
         print(e)
     else:
         payload = _generate_magic_packet(mac_cleaned)
         try:
-            _send_udp_broadcast(payload, valid_ip_address, port)
+            _send_udp_broadcast(payload, valid_ip_address, valid_port)
         except OSError:
             print(f"[Error] Cannot send broadcast to IP address: {valid_ip_address}")
-        except OverflowError:
-            print(f"[Error] Invalid port: {port}")

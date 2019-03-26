@@ -15,6 +15,7 @@ from pywol.wol import (
     _generate_magic_packet,
     _send_udp_broadcast,
     _validate_ip_address,
+    _validate_port_number,
     wake,
 )
 
@@ -127,6 +128,30 @@ def test__validate_ip_address_invalid(invalid_input):
 
     with pytest.raises(ValueError):
         _validate_ip_address(invalid_input)
+
+
+@pytest.mark.parametrize("valid_input", [0, 7, 9, 65535])
+def test__validate_port_number_valid(valid_input):
+    """Valid inputs should be returned."""
+
+    valid_port = _validate_port_number(valid_input)
+    assert valid_port == valid_input
+
+
+@pytest.mark.parametrize("invalid_type", [None, "1", "", 1.2])
+def test__validate_port_number_invalid_type(invalid_type):
+    """Non-integer inputs should raise TypeError."""
+
+    with pytest.raises(TypeError):
+        _validate_port_number(invalid_type)
+
+
+@pytest.mark.parametrize("invalid_port", [-1, 65536])
+def test__validate_port_number_invalid_int_value(invalid_port):
+    """Integers not in range 0 - 65535 should raise ValueError."""
+
+    with pytest.raises(ValueError):
+        _validate_port_number(invalid_port)
 
 
 def test_wake_defaults(sample_data):
