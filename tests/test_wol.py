@@ -14,6 +14,7 @@ from pywol.wol import (
     _clean_mac_address,
     _generate_magic_packet,
     _send_upd_broadcast,
+    _validate_ip_address,
     wake,
 )
 
@@ -95,6 +96,37 @@ def test__send_upd_broadcast(sample_data, target_ip, target_port):
         )
         data_received, _ = sock.recvfrom(128)
         assert data_received == sample_data["payload"]
+
+
+# [
+#        (" 1.1.1.1    ", "1.1.1.1"),
+#        (" 192.168.0.1 ", "192.168.0.1"),
+#        ("10.3.16.255 ", "10.3.16.255"),
+#        ("224.0.0.255", "224.0.0.255"),
+#        ("  255.255.255.255", "255.255.255.255"),
+#    ],
+
+
+@pytest.mark.parametrize(
+    "valid_input",
+    ["1.1.1.1", "192.168.0.1", "10.3.16.255", "224.0.0.255", "255.255.255.255"],
+)
+def test__validate_ip_address_valid(valid_input):
+    """Valid inputs should be returned."""
+
+    valid_ip = _validate_ip_address(valid_input)
+    assert valid_ip == valid_input
+
+
+@pytest.mark.parametrize(
+    "invalid_input",
+    ["10.3.1234.100", "192.168.0.256", "10.00.16.255", "224.0.1", "1.2.3.4.5"],
+)
+def test__validate_ip_address_invalid(invalid_input):
+    """Invalid inputs should raise ValueError."""
+
+    with pytest.raises(ValueError):
+        _validate_ip_address(invalid_input)
 
 
 def test_wake_defaults(sample_data):

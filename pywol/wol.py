@@ -14,6 +14,10 @@ import socket
 
 NON_HEX_CHARS = re.compile(r"[^a-f0-9]", re.IGNORECASE)
 MAC_PATTERN = re.compile(r"^[a-f0-9]{12}$", re.IGNORECASE)
+IP_PATTERN = re.compile(
+    r"^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}"
+    r"(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+)
 
 
 def _clean_mac_address(mac_address_supplied):
@@ -87,6 +91,33 @@ def _send_upd_broadcast(payload, ip_address, port):
         sock.sendto(payload, (ip_address, port))
 
 
+def _validate_ip_address(ip_address_supplied):
+    """Strip whitespace and validate IPv4 address.
+
+    Parameters
+    ----------
+    ip_address_supplied : str
+        Supplied IP address.
+
+    Returns
+    -------
+    str
+        Valid IPv4 address.
+
+    Raises
+    ------
+    ValueError
+        If `ip_address_supplied` does not contain a valid IPv4 address.
+
+    """
+
+    ip_address = ip_address_supplied.strip()
+    if IP_PATTERN.fullmatch(ip_address):
+        return ip_address
+    else:
+        raise ValueError(f"[Error] Invalid IP address: {ip_address_supplied}")
+
+
 def wake(mac_address, *, ip_address="255.255.255.255", port=9):
     """Generate and send WoL magic packet.
 
@@ -106,13 +137,14 @@ def wake(mac_address, *, ip_address="255.255.255.255", port=9):
 
     try:
         mac_cleaned = _clean_mac_address(mac_address)
+        valid_ip_address = _validate_ip_address(ip_address)
     except ValueError as e:
         print(e)
     else:
         payload = _generate_magic_packet(mac_cleaned)
         try:
-            _send_upd_broadcast(payload, ip_address, port)
+            _send_upd_broadcast(payload, valid_ip_address, port)
         except OSError:
-            print(f"[Error] Invalid IP address: {ip_address}")
+            print(f"[Error] Cannot send broadcast to IP address: {valid_ip_address}")
         except OverflowError:
             print(f"[Error] Invalid port: {port}")
