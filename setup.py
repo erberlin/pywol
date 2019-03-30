@@ -1,11 +1,13 @@
+import pathlib
 from setuptools import setup
 
-with open("README.md", "r", encoding="utf-8") as f:
-    README = f.read()
+HERE = pathlib.Path(__file__).parent
+
+README = (HERE / "README.md").read_text()
 
 setup(
     name="pywol",
-    version="0.4.0",
+    version="0.4.1",
     description="A Wake-on-LAN tool written in Python.",
     long_description=README,
     long_description_content_type="text/markdown",
