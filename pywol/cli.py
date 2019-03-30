@@ -26,9 +26,9 @@ from .wol import wake
 @click.option("--port", "--p", default=9, show_default=True, help="Target port.")
 @click.option("--verbose", "--v", is_flag=True)
 def cli(mac_address, ip_address, port, verbose):
-    """CLI for the pywol package.
+    """CLI for the Pywol package.
 
-    Prefer specifying the broadcast IPv4 address of the target host
+    Prefer specifying the IPv4 broadcast address of the target host
     subnet over the default '255.255.255.255'.
 
     """
