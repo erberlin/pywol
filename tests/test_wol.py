@@ -8,6 +8,7 @@ license: MIT, see LICENSE for more details.
 
 import socket
 
+import mock
 import pytest
 
 from pywol.wol import (
@@ -84,28 +85,16 @@ def test__clean_mac_address_invalid(invalid_input):
 
 
 @pytest.mark.parametrize(
-    "target_ip, target_port", [("127.0.0.1", 7), ("255.255.255.255", 9)]
+    "target_ip, target_port", [("192.168.1.255", 7), ("255.255.255.255", 9)]
 )
-def test__send_upd_broadcast(sample_data, target_ip, target_port):
+@mock.patch("socket.socket.sendto", autospec=True)
+def test__send_upd_broadcast(mock_socket, sample_data, target_ip, target_port):
     """Test with specified IP address and port."""
 
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        sock.settimeout(1)
-        sock.bind(("0.0.0.0", target_port))
-        _send_udp_broadcast(
-            sample_data["payload"], ip_address=target_ip, port=target_port
-        )
-        data_received, _ = sock.recvfrom(128)
-        assert data_received == sample_data["payload"]
-
-
-# [
-#        (" 1.1.1.1    ", "1.1.1.1"),
-#        (" 192.168.0.1 ", "192.168.0.1"),
-#        ("10.3.16.255 ", "10.3.16.255"),
-#        ("224.0.0.255", "224.0.0.255"),
-#        ("  255.255.255.255", "255.255.255.255"),
-#    ],
+    _send_udp_broadcast(sample_data["payload"], ip_address=target_ip, port=target_port)
+    socket.socket.sendto.assert_called_with(
+        sample_data["payload"], (target_ip, target_port)
+    )
 
 
 @pytest.mark.parametrize(
@@ -155,22 +144,16 @@ def test__validate_port_number_invalid_int_value(invalid_port):
 
 
 def test_wake_defaults(sample_data):
-    """Test with defaults."""
+    """Test pywol.wol.wake with defaults."""
 
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        sock.settimeout(1)
-        sock.bind(("0.0.0.0", 9))
+    with mock.patch("pywol.wol._send_udp_broadcast", autospec=True) as send_broadcast:
         wake(sample_data["mac"])
-        data_received, _ = sock.recvfrom(128)
-        assert data_received == sample_data["payload"]
+        send_broadcast.assert_called_with(sample_data["payload"], "255.255.255.255", 9)
 
 
 def test_wake_target_ip_port(sample_data):
-    """Test with specified target ip address & port."""
+    """Test pywol.wol.wake with specified target ip address & port."""
 
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        sock.settimeout(1)
-        sock.bind(("0.0.0.0", 7))
-        wake(sample_data["mac"], ip_address="127.0.0.1", port=7)
-        data_received, _ = sock.recvfrom(128)
-        assert data_received == sample_data["payload"]
+    with mock.patch("pywol.wol._send_udp_broadcast", autospec=True) as send_broadcast:
+        wake(sample_data["mac"], ip_address="192.168.1.255", port=7)
+        send_broadcast.assert_called_with(sample_data["payload"], "192.168.1.255", 7)

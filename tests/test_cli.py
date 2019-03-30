@@ -66,11 +66,3 @@ def test_cli_non_integer_port():
     runner = CliRunner()
     result = runner.invoke(cli, ["1A2B3C4D5E6F", "--p", "a"])
     assert result.exit_code == 2
-
-
-def test_cli_unusable_broadcast_ip():
-    """Invoke with IP 0.0.0.0 which socket can't broadcast to."""
-
-    runner = CliRunner()
-    result = runner.invoke(cli, ["1A2B3C4D5E6F", "--ip", "0.0.0.0"])
-    assert result.output == "[Error] Cannot send broadcast to IP address: 0.0.0.0\n"
