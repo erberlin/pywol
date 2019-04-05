@@ -13,9 +13,9 @@ import pytest
 
 from pywol.wol import (
     _clean_mac_address,
+    _evaluate_ip_address,
     _generate_magic_packet,
     _send_udp_broadcast,
-    _validate_ip_address,
     _validate_port_number,
     wake,
 )
@@ -101,22 +101,38 @@ def test__send_upd_broadcast(mock_socket, sample_data, target_ip, target_port):
     "valid_input",
     ["1.1.1.1", "192.168.0.1", "10.3.16.255", "224.0.0.255", "255.255.255.255"],
 )
-def test__validate_ip_address_valid(valid_input):
-    """Valid inputs should be returned."""
+def test__evaluate_ip_address_valid(valid_input):
+    """Subnet broadcast address should be returned."""
 
-    valid_ip = _validate_ip_address(valid_input)
+    valid_ip = _evaluate_ip_address(valid_input)
     assert valid_ip == valid_input
 
 
 @pytest.mark.parametrize(
-    "invalid_input",
-    ["10.3.1234.100", "192.168.0.256", "10.00.16.255", "224.0.1", "1.2.3.4.5"],
+    "ip_with_netmask, expected_broadcast_address",
+    [
+        ("10.3.16.5/8", "10.255.255.255"),
+        ("172.16.10.24/12", "172.31.255.255"),
+        ("192.168.40.100/16", "192.168.255.255"),
+        ("192.168.0.1/24", "192.168.0.255"),
+    ],
 )
-def test__validate_ip_address_invalid(invalid_input):
+def test__evaluate_ip_address_with_netmask(ip_with_netmask, expected_broadcast_address):
+    """Valid inputs should be returned."""
+
+    broadcast_address = _evaluate_ip_address(ip_with_netmask)
+    assert broadcast_address == expected_broadcast_address
+
+
+@pytest.mark.parametrize(
+    "invalid_input",
+    ["10.3.1234.100", "192.168.0.256", "10..16.255", "224.0.1", "1.2.3.4.5"],
+)
+def test__evaluate_ip_address_invalid(invalid_input):
     """Invalid inputs should raise ValueError."""
 
     with pytest.raises(ValueError):
-        _validate_ip_address(invalid_input)
+        _evaluate_ip_address(invalid_input)
 
 
 @pytest.mark.parametrize("valid_input", [0, 7, 9, 65535])
@@ -157,3 +173,21 @@ def test_wake_target_ip_port(sample_data):
     with mock.patch("pywol.wol._send_udp_broadcast", autospec=True) as send_broadcast:
         wake(sample_data["mac"], ip_address="192.168.1.255", port=7)
         send_broadcast.assert_called_with(sample_data["payload"], "192.168.1.255", 7)
+
+
+def test_wake_ip_with_netmask(sample_data):
+    """Test pywol.wol.wake with specified target ip address + netmask & port."""
+
+    with mock.patch("pywol.wol._send_udp_broadcast", autospec=True) as send_broadcast:
+        wake(sample_data["mac"], ip_address="192.168.1.123/24", port=7)
+        send_broadcast.assert_called_with(sample_data["payload"], "192.168.1.255", 7)
+
+
+def test_wake_return_target_kwarg(sample_data):
+    """Test pywol.wol.wake with return_target kwarg."""
+
+    with mock.patch("pywol.wol._send_udp_broadcast", autospec=True):
+        target = wake(
+            sample_data["mac"], ip_address="192.168.1.123", port=7, return_target=True
+        )
+        assert target == "192.168.1.123:7"

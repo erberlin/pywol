@@ -9,15 +9,12 @@ license: MIT, see LICENSE for more details.
 
 """
 
+import ipaddress
 import re
 import socket
 
 NON_HEX_CHARS = re.compile(r"[^a-f0-9]", re.IGNORECASE)
 MAC_PATTERN = re.compile(r"^[a-f0-9]{12}$", re.IGNORECASE)
-IP_PATTERN = re.compile(
-    r"^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}"
-    r"(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
-)
 
 
 def _clean_mac_address(mac_address_supplied):
@@ -49,6 +46,42 @@ def _clean_mac_address(mac_address_supplied):
         return mac_address_cleaned
     else:
         raise ValueError(f"[Error] Invalid MAC address: {mac_address_supplied}")
+
+
+def _evaluate_ip_address(ip_address):
+    """Evaluate supplied IPv4 address.
+
+    Returns the supplied IPv4 address if valid and specified without a
+    netmask, or returns the subnet broadcast address if the supplied
+    IPV4 address is specified with a netmask such as '192.168.1.5/24' or
+    '192.168.1.5/255.255.255.0'.
+
+    Parameters
+    ----------
+    ip_address : str
+        Supplied IP address.
+
+    Returns
+    -------
+    str
+        Valid IPv4 address.
+
+    Raises
+    ------
+    ValueError
+        If `ip_address` does not contain a valid IPv4 address.
+
+    """
+
+    ip = ip_address.strip()
+    try:
+        ip = str(ipaddress.IPv4Address(ip))
+    except ipaddress.AddressValueError:
+        try:
+            ip = str(ipaddress.IPv4Network(ip, strict=False).broadcast_address)
+        except Exception as e:
+            raise ValueError(f"[Error] Invalid IP address: {ip_address}") from e
+    return ip
 
 
 def _generate_magic_packet(mac_address):
@@ -91,33 +124,6 @@ def _send_udp_broadcast(payload, ip_address, port):
         sock.sendto(payload, (ip_address, port))
 
 
-def _validate_ip_address(ip_address_supplied):
-    """Strip whitespace and validate IPv4 address.
-
-    Parameters
-    ----------
-    ip_address_supplied : str
-        Supplied IP address.
-
-    Returns
-    -------
-    str
-        Valid IPv4 address.
-
-    Raises
-    ------
-    ValueError
-        If `ip_address_supplied` does not contain a valid IPv4 address.
-
-    """
-
-    ip_address = ip_address_supplied.strip()
-    if IP_PATTERN.fullmatch(ip_address):
-        return ip_address
-    else:
-        raise ValueError(f"[Error] Invalid IP address: {ip_address_supplied}")
-
-
 def _validate_port_number(port_number):
     """Validate port number.
 
@@ -148,7 +154,7 @@ def _validate_port_number(port_number):
         raise ValueError(f"[Error] Invalid port number: {port_number}")
 
 
-def wake(mac_address, *, ip_address="255.255.255.255", port=9):
+def wake(mac_address, *, ip_address="255.255.255.255", port=9, return_target=False):
     """Generate and send WoL magic packet.
 
     Prefer specifying the broadcast IPv4 address of the target host
@@ -167,7 +173,7 @@ def wake(mac_address, *, ip_address="255.255.255.255", port=9):
 
     try:
         mac_cleaned = _clean_mac_address(mac_address)
-        valid_ip_address = _validate_ip_address(ip_address)
+        valid_ip_address = _evaluate_ip_address(ip_address)
         valid_port = _validate_port_number(port)
     except ValueError as e:
         print(e)
@@ -179,3 +185,6 @@ def wake(mac_address, *, ip_address="255.255.255.255", port=9):
             _send_udp_broadcast(payload, valid_ip_address, valid_port)
         except OSError:
             print(f"[Error] Cannot send broadcast to IP address: {valid_ip_address}")
+        else:
+            if return_target:
+                return ":".join((valid_ip_address, str(valid_port)))
