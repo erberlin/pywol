@@ -154,11 +154,15 @@ def _validate_port_number(port_number):
         raise ValueError(f"[Error] Invalid port number: {port_number}")
 
 
-def wake(mac_address, *, ip_address="255.255.255.255", port=9, return_target=False):
+def wake(mac_address, *, ip_address="255.255.255.255", port=9, return_dest=False):
     """Generate and send WoL magic packet.
 
-    Prefer specifying the broadcast IPv4 address of the target host
+    Prefer to specify the IPv4 broadcast address of the target host's
     subnet over the default '255.255.255.255'.
+
+    To automatically resolve the broadcast address of a subnet,
+    specify the target host's IPv4 address along with its netmask. E.g.
+    '192.168.1.5/24' or '192.168.1.5/255.255.255.0' --> '192.168.1.255'
 
     Parameters
     ----------
@@ -168,6 +172,15 @@ def wake(mac_address, *, ip_address="255.255.255.255", port=9, return_target=Fal
         Target IP address. (default is '255.255.255.255').
     port : int, optional
         Target port. (default is 9).
+    return_dest : bool, optional
+        Flag to return package destination ip & port on success.
+        (default is False).
+
+    Returns
+    -------
+    tuple(str, str)
+        If `return_dest` is True, returns destination ip & port of
+        successfully sent package.
 
     """
 
@@ -186,5 +199,5 @@ def wake(mac_address, *, ip_address="255.255.255.255", port=9, return_target=Fal
         except OSError:
             print(f"[Error] Cannot send broadcast to IP address: {valid_ip_address}")
         else:
-            if return_target:
-                return ":".join((valid_ip_address, str(valid_port)))
+            if return_dest is True:
+                return (valid_ip_address, str(valid_port))

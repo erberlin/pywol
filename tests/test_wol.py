@@ -187,7 +187,7 @@ def test_wake_return_target_kwarg(sample_data):
     """Test pywol.wol.wake with return_target kwarg."""
 
     with mock.patch("pywol.wol._send_udp_broadcast", autospec=True):
-        target = wake(
-            sample_data["mac"], ip_address="192.168.1.123", port=7, return_target=True
+        dest = wake(
+            sample_data["mac"], ip_address="192.168.1.123", port=7, return_dest=True
         )
-        assert target == "192.168.1.123:7"
+        assert dest == ("192.168.1.123", "7")
