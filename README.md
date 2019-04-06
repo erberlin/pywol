@@ -12,37 +12,70 @@ Pywol allows for starting up [WoL](https://en.wikipedia.org/wiki/Wake-on-LAN)-en
 ## Installation
 
 ```sh
-    $ pip install pywol
+$ pip install pywol
 ```
 
 ## Usage examples
 As a CLI tool:
 ```sh
-    $ pywol 1A:2B:3C:4D:5E:6F --v
-    Waking '1A:2B:3C:4D:5E:6F' at 255.255.255.255:9...
-    $
-    $ pywol --help
-    Usage: pywol [OPTIONS] MAC_ADDRESS
+$ pywol 1A2B3C4D5E6F --v
+Sent magic packet for '1A2B3C4D5E6F' to 255.255.255.255:9.
+$
+$ pywol 1A:2B:3C:4D:5E:6F --v --ip 192.168.1.5/24
+Sent magic packet for '1A:2B:3C:4D:5E:6F' to 192.168.1.255:9.
+$
+$pywol --help
+Usage: pywol [OPTIONS] MAC_ADDRESS
 
-      CLI for the Pywol package.
-  
-      Prefer specifying the IPv4 broadcast address of the target host subnet
-      over the default '255.255.255.255'.
+  CLI for the Pywol package.
 
-    Options:
-      --ip_address, --ip TEXT  IPv4 broadcast address of target subnet.  [default:
-                              255.255.255.255]
-      --port, --p INTEGER      Target port.  [default: 9]
-      --verbose, --v
-      --help                   Show this message and exit.
+  Prefer to specify the IPv4 broadcast address of the target host's
+  subnet over the default '255.255.255.255'.
+
+  To automatically resolve the broadcast address of a subnet,
+  specify the target host's IPv4 address along with its netmask. E.g.
+  '192.168.1.5/24' or '192.168.1.5/255.255.255.0' --> '192.168.1.255'
+
+Options:
+  --ip_address, --ip TEXT  IPv4 broadcast address or host address with
+                            netmask.  [default: 255.255.255.255]
+  --port, --p INTEGER      Target port.  [default: 9]
+  --verbose, --v
+  --help                   Show this message and exit.
 ```
 Imported for use in other code:
 ```python
-    from pywol import wake
-    
-    wake("1A2B3C4D5E6F", ip_address="192.168.1.255")
-    wake("1A-2B-3C-4D-5E-6F", ip_address="192.168.1.255")
+from pywol import wake
+
+wake("1A2B3C4D5E6F", ip_address="192.168.1.255")
+wake("1A-2B-3C-4D-5E-6F", ip_address="192.168.1.5/24")
 ```
+
+## Development setup
+Clone repo:
+```sh
+$ git clone https://github.com/erberlin/pywol.git
+$ cd pywol
+```
+Create and activate virtual environment on OS X & Linux:
+```sh
+$ python3 -m venv venv
+$ source venv/bin/activate
+```
+Create and activate virtual environment on Windows:
+```sh
+> python -m venv venv
+> venv\Scripts\activate
+```
+Install development requirements:
+```sh
+$ pip install -r dev_requirements.txt
+```
+Run test suite:
+```sh
+$ pytest -v
+```
+
 ## Why create another WoL tool?
 I needed one and this was an opportunity to learn some stuff.
 
