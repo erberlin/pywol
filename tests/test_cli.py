@@ -25,7 +25,9 @@ def test_cli_defaults_verbose():
     runner = CliRunner()
     result = runner.invoke(cli, ["1A2B3C4D5E6F", "--v"])
     assert result.exit_code == 0
-    assert result.output == "Waking '1A2B3C4D5E6F' at 255.255.255.255:9...\n"
+    assert (
+        result.output == "Sent magic packet for '1A2B3C4D5E6F' to 255.255.255.255:9.\n"
+    )
 
 
 def test_cli_no_args():
