@@ -167,9 +167,9 @@ def wake(mac_address, *, ip_address="255.255.255.255", port=9, return_dest=False
     Parameters
     ----------
     mac_address : str
-        Supplied MAC address.
+        Target MAC address.
     ip_address : str, optional
-        Target IP address. (default is '255.255.255.255').
+        Target IPv4 address. (default is '255.255.255.255').
     port : int, optional
         Target port. (default is 9).
     return_dest : bool, optional
@@ -179,8 +179,8 @@ def wake(mac_address, *, ip_address="255.255.255.255", port=9, return_dest=False
     Returns
     -------
     tuple(str, str)
-        If `return_dest` is True, returns destination ip & port of
-        successfully sent package.
+        Returns destination IP & port of successfully sent package
+        if `return_dest` is True.
 
     """
 
