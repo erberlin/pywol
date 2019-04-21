@@ -2,8 +2,10 @@
 black
 flake8
 mock
+numpydoc
 pytest
 pytest-cov
+Sphinx
 twine
 wheel
 
